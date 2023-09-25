@@ -61,7 +61,7 @@ class ListingOrderByInput {
   @Field(() => SortOrder, {
     nullable: true,
   })
-  listingCreatedBy?: SortOrder;
+  user?: SortOrder;
 
   @ApiProperty({
     required: false,

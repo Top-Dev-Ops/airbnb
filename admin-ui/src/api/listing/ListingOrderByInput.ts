@@ -4,7 +4,7 @@ export type ListingOrderByInput = {
   createdAt?: SortOrder;
   description?: SortOrder;
   id?: SortOrder;
-  listingCreatedBy?: SortOrder;
+  user?: SortOrder;
   locationData?: SortOrder;
   locationType?: SortOrder;
   mapData?: SortOrder;

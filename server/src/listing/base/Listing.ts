@@ -11,11 +11,20 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { ObjectType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsString, IsOptional, IsInt } from "class-validator";
+import {
+  IsDate,
+  IsString,
+  ValidateNested,
+  IsOptional,
+  IsInt,
+} from "class-validator";
 import { Type } from "class-transformer";
+import { User } from "../../user/base/User";
 import { IsJSONValue } from "@app/custom-validators";
 import { GraphQLJSON } from "graphql-type-json";
 import { JsonValue } from "type-fest";
+import { Trip } from "../../trip/base/Trip";
+import { Wishlist } from "../../wishlist/base/Wishlist";
 
 @ObjectType()
 class Listing {
@@ -45,11 +54,11 @@ class Listing {
 
   @ApiProperty({
     required: true,
-    type: String,
+    type: () => User,
   })
-  @IsString()
-  @Field(() => String)
-  listingCreatedBy!: string;
+  @ValidateNested()
+  @Type(() => User)
+  listingCreatedBy?: User;
 
   @ApiProperty({
     required: false,
@@ -104,12 +113,30 @@ class Listing {
   title!: string;
 
   @ApiProperty({
+    required: false,
+    type: () => [Trip],
+  })
+  @ValidateNested()
+  @Type(() => Trip)
+  @IsOptional()
+  trips?: Array<Trip>;
+
+  @ApiProperty({
     required: true,
   })
   @IsDate()
   @Type(() => Date)
   @Field(() => Date)
   updatedAt!: Date;
+
+  @ApiProperty({
+    required: false,
+    type: () => [Wishlist],
+  })
+  @ValidateNested()
+  @Type(() => Wishlist)
+  @IsOptional()
+  wishlists?: Array<Wishlist>;
 }
 
 export { Listing as Listing };

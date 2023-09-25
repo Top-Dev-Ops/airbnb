@@ -26,6 +26,11 @@ import { ListingCountArgs } from "./ListingCountArgs";
 import { ListingFindManyArgs } from "./ListingFindManyArgs";
 import { ListingFindUniqueArgs } from "./ListingFindUniqueArgs";
 import { Listing } from "./Listing";
+import { TripFindManyArgs } from "../../trip/base/TripFindManyArgs";
+import { Trip } from "../../trip/base/Trip";
+import { WishlistFindManyArgs } from "../../wishlist/base/WishlistFindManyArgs";
+import { Wishlist } from "../../wishlist/base/Wishlist";
+import { User } from "../../user/base/User";
 import { ListingService } from "../listing.service";
 @common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Listing)
@@ -92,7 +97,13 @@ export class ListingResolverBase {
   ): Promise<Listing> {
     return await this.service.create({
       ...args,
-      data: args.data,
+      data: {
+        ...args.data,
+
+        listingCreatedBy: {
+          connect: args.data.listingCreatedBy,
+        },
+      },
     });
   }
 
@@ -109,7 +120,13 @@ export class ListingResolverBase {
     try {
       return await this.service.update({
         ...args,
-        data: args.data,
+        data: {
+          ...args.data,
+
+          listingCreatedBy: {
+            connect: args.data.listingCreatedBy,
+          },
+        },
       });
     } catch (error) {
       if (isRecordNotFoundError(error)) {
@@ -140,5 +157,66 @@ export class ListingResolverBase {
       }
       throw error;
     }
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => [Trip], { name: "trips" })
+  @nestAccessControl.UseRoles({
+    resource: "Trip",
+    action: "read",
+    possession: "any",
+  })
+  async resolveFieldTrips(
+    @graphql.Parent() parent: Listing,
+    @graphql.Args() args: TripFindManyArgs
+  ): Promise<Trip[]> {
+    const results = await this.service.findTrips(parent.id, args);
+
+    if (!results) {
+      return [];
+    }
+
+    return results;
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => [Wishlist], { name: "wishlists" })
+  @nestAccessControl.UseRoles({
+    resource: "Wishlist",
+    action: "read",
+    possession: "any",
+  })
+  async resolveFieldWishlists(
+    @graphql.Parent() parent: Listing,
+    @graphql.Args() args: WishlistFindManyArgs
+  ): Promise<Wishlist[]> {
+    const results = await this.service.findWishlists(parent.id, args);
+
+    if (!results) {
+      return [];
+    }
+
+    return results;
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => User, {
+    nullable: true,
+    name: "listingCreatedBy",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "read",
+    possession: "any",
+  })
+  async resolveFieldListingCreatedBy(
+    @graphql.Parent() parent: Listing
+  ): Promise<User | null> {
+    const result = await this.service.getListingCreatedBy(parent.id);
+
+    if (!result) {
+      return null;
+    }
+    return result;
   }
 }

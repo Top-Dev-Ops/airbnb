@@ -11,10 +11,14 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { InputType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsOptional, IsInt } from "class-validator";
+import { IsString, ValidateNested, IsOptional, IsInt } from "class-validator";
+import { UserWhereUniqueInput } from "../../user/base/UserWhereUniqueInput";
+import { Type } from "class-transformer";
 import { IsJSONValue } from "@app/custom-validators";
 import { GraphQLJSON } from "graphql-type-json";
 import { InputJsonValue } from "../../types";
+import { TripCreateNestedManyWithoutListingsInput } from "./TripCreateNestedManyWithoutListingsInput";
+import { WishlistCreateNestedManyWithoutListingsInput } from "./WishlistCreateNestedManyWithoutListingsInput";
 
 @InputType()
 class ListingCreateInput {
@@ -28,11 +32,12 @@ class ListingCreateInput {
 
   @ApiProperty({
     required: true,
-    type: String,
+    type: () => UserWhereUniqueInput,
   })
-  @IsString()
-  @Field(() => String)
-  listingCreatedBy!: string;
+  @ValidateNested()
+  @Type(() => UserWhereUniqueInput)
+  @Field(() => UserWhereUniqueInput)
+  listingCreatedBy!: UserWhereUniqueInput;
 
   @ApiProperty({
     required: false,
@@ -85,6 +90,30 @@ class ListingCreateInput {
   @IsString()
   @Field(() => String)
   title!: string;
+
+  @ApiProperty({
+    required: false,
+    type: () => TripCreateNestedManyWithoutListingsInput,
+  })
+  @ValidateNested()
+  @Type(() => TripCreateNestedManyWithoutListingsInput)
+  @IsOptional()
+  @Field(() => TripCreateNestedManyWithoutListingsInput, {
+    nullable: true,
+  })
+  trips?: TripCreateNestedManyWithoutListingsInput;
+
+  @ApiProperty({
+    required: false,
+    type: () => WishlistCreateNestedManyWithoutListingsInput,
+  })
+  @ValidateNested()
+  @Type(() => WishlistCreateNestedManyWithoutListingsInput)
+  @IsOptional()
+  @Field(() => WishlistCreateNestedManyWithoutListingsInput, {
+    nullable: true,
+  })
+  wishlists?: WishlistCreateNestedManyWithoutListingsInput;
 }
 
 export { ListingCreateInput as ListingCreateInput };
